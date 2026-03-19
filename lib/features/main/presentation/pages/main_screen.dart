@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:quizcraft/features/home/presentation/pages/home_page.dart';
 import 'package:quizcraft/features/analysis/presentation/pages/analysis_page.dart';
 import 'package:quizcraft/features/profile/presentation/pages/profile_page.dart';
+import 'package:quizcraft/features/subject/presentation/pages/subject_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -16,7 +17,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _pages = [
     const HomePage(),
-    const Center(child: Text('Subject Page', style: TextStyle(color: Colors.white, fontSize: 24))),
+    const SubjectPage(),
     const AnalysisPage(),
     const ProfilePage(),
   ];
