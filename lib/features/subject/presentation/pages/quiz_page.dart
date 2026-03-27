@@ -63,7 +63,7 @@ class _QuizPageState extends State<QuizPage> {
 
       if (mounted) {
         setState(() {
-          questions = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+          questions = snapshot.docs.map((doc) => doc.data()).toList();
           _timeLimitInSeconds = timeLimitMins * 60; 
           isLoading = false;
         });
