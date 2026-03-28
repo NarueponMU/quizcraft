@@ -33,14 +33,14 @@ class _EbookPageState extends State<EbookPage> {
   bool _isMatchYear(String code, bool wantYear1) {
     if (code.isEmpty) return false;
     
-    // หาวิธีดึงตัวเลขตัวแรกออกมาจากรหัสวิชา (เช่น ITDS120 -> เลข 1)
+    // หาวิธีดึงตัวเลขตัวแรกออกมาจากรหัสวิชา
     final match = RegExp(r'\d').firstMatch(code);
     if (match != null) {
       String firstDigit = match.group(0)!;
       if (wantYear1 && firstDigit == '1') return true;
       if (!wantYear1 && firstDigit == '2') return true;
     }
-    return false; // ถ้าไม่ใช่ทั้งคู่ ให้ถือว่าไม่ตรงเงื่อนไข
+    return false; 
   }
 
   @override
@@ -60,7 +60,7 @@ class _EbookPageState extends State<EbookPage> {
         child: SafeArea(
           child: Column(
             children: [
-              // 1. Header (ปุ่ม Back + หัวข้อ)
+              // 1. Header 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
                 child: Row(
@@ -82,7 +82,7 @@ class _EbookPageState extends State<EbookPage> {
                 ),
               ),
 
-              // 2. Search Bar แบบคลีนๆ (ไม่มี Dropdown)
+              // 2. Search Bar แบบคลีนๆ 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Container(
@@ -133,13 +133,13 @@ class _EbookPageState extends State<EbookPage> {
                     const SizedBox(width: 16),
                     Expanded(child: _buildTab('Year 2', !isYear1Selected, () {
                       setState(() => isYear1Selected = false);
-                    }, selectedColor: const Color(0xFFE46CF4))), // สีชมพูอมม่วง
+                    }, selectedColor: const Color(0xFFE46CF4))), 
                   ],
                 ),
               ),
               const SizedBox(height: 24),
 
-              // 4. List of Courses (ดึงจาก Firebase และกรองข้อมูล)
+              // 4. List of Courses 
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
                   stream: _subjectStream,
@@ -156,17 +156,13 @@ class _EbookPageState extends State<EbookPage> {
 
                     final allSubjects = snapshot.data!.docs;
 
-                    // 🔴 กรองข้อมูล 2 ชั้น: ชั้นแรกเช็ค Year, ชั้นสองเช็คคำค้นหา
                     final filteredSubjects = allSubjects.where((doc) {
                       final data = doc.data() as Map<String, dynamic>;
                       final name = (data['name'] ?? '').toString().toLowerCase();
                       final code = (data['code'] ?? '').toString();
                       final fullName = '${code.toLowerCase()} $name'; 
                       
-                      // 1. เช็คว่าเป็น Year 1 หรือ Year 2 ตามที่เลือกแท็บไว้หรือไม่
                       bool matchYear = _isMatchYear(code, isYear1Selected);
-                      
-                      // 2. เช็คคำค้นหา
                       bool matchSearch = fullName.contains(_searchQuery);
 
                       return matchYear && matchSearch;
@@ -189,19 +185,21 @@ class _EbookPageState extends State<EbookPage> {
                         String code = subjectData['code'] ?? '';
                         String name = subjectData['name'] ?? 'Unknown Subject';
                         
-                        // สมมติข้อมูล Description และ PDF ไว้ก่อน (ในอนาคตคุณสามารถเพิ่มฟิลด์นี้ใน Firebase ได้)
                         String description = subjectData['description'] ?? 'Course material for $name. Tap to view documents and PDFs.';
-                        List<String> pdfs = [
-                          '${code}_Lecture_01.pdf',
-                          '${code}_Summary_Notes.pdf',
-                        ];
+                        
+                        // 🔴 1. ดึงข้อมูล pdfLinks ของจริงจาก Firebase
+                        List<String> pdfs = [];
+                        if (subjectData['pdfLinks'] != null) {
+                           // แปลง Array จาก Firebase ให้เป็น List<String>
+                           pdfs = List<String>.from(subjectData['pdfLinks']);
+                        }
 
                         return _buildCourseCard(
                           context: context,
                           code: code,
                           title: name,
                           description: description,
-                          pdfs: pdfs,
+                          pdfs: pdfs, // 🔴 2. ส่งข้อมูลของจริงไปหน้า Detail
                         );
                       },
                     );
@@ -219,7 +217,7 @@ class _EbookPageState extends State<EbookPage> {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300), // เพิ่มเอฟเฟกต์ตอนกดเปลี่ยนแท็บนิดนึง
+        duration: const Duration(milliseconds: 300), 
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? selectedColor : Colors.white.withOpacity(0.9), 
@@ -274,12 +272,12 @@ class _EbookPageState extends State<EbookPage> {
         child: Column(
           children: [
             Container(
-              height: 140, // ปรับความสูงรูปลงนิดนึงให้พอดีจอ
-              color: const Color(0xFFE2E6EC), // สีเทาอ่อนให้ดูคลีน
+              height: 140, 
+              color: const Color(0xFFE2E6EC), 
               child: Stack(
                 children: [
                   const Center(
-                    child: Icon(Icons.menu_book_rounded, size: 60, color: Colors.black26), // เปลี่ยนไอคอนเป็นรูปหนังสือ
+                    child: Icon(Icons.menu_book_rounded, size: 60, color: Colors.black26), 
                   ),
                   Positioned(
                     top: 12,
@@ -298,7 +296,7 @@ class _EbookPageState extends State<EbookPage> {
             ),
             Container(
               padding: const EdgeInsets.all(20),
-              color: const Color(0xFF1E293B), // ปรับสีดำให้ดูพรีเมียมขึ้น (Slate 800)
+              color: const Color(0xFF1E293B), 
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -320,7 +318,7 @@ class _EbookPageState extends State<EbookPage> {
                       ],
                     ),
                   ),
-                  const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 18), // เปลี่ยนเป็นลูกศรเล็กๆ ดูทันสมัย
+                  const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 18), 
                 ],
               ),
             ),

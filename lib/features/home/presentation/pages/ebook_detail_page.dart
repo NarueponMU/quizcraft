@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart'; // 🔴 Import url_launcher สำหรับเปิดไฟล์
+import 'package:url_launcher/url_launcher.dart'; 
 
 class EbookDetailPage extends StatelessWidget {
   final String courseTitle;
@@ -13,9 +13,7 @@ class EbookDetailPage extends StatelessWidget {
     required this.pdfFiles,
   });
 
-  // 🔴 ฟังก์ชันสำหรับเปิด PDF
   Future<void> _openPdf(BuildContext context, String pdfString) async {
-    // เช็คว่าสตริงที่ส่งมาเป็น URL ของจริงหรือไม่ (เริ่มด้วย http)
     if (pdfString.startsWith('http://') || pdfString.startsWith('https://')) {
       final Uri url = Uri.parse(pdfString);
       try {
@@ -26,18 +24,17 @@ class EbookDetailPage extends StatelessWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('ไม่สามารถเปิดไฟล์ PDF ได้', style: TextStyle(fontFamily: 'SF-Pro')),
+              content: Text('The PDF file cannot be opened.', style: TextStyle(fontFamily: 'SF-Pro')),
               backgroundColor: Colors.redAccent,
             ),
           );
         }
       }
     } else {
-      // 🌟 ถ้ายังไม่ใช่ URL (เป็นแค่ชื่อไฟล์จำลอง) ให้ขึ้นแจ้งเตือนไปก่อน
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('กำลังเปิดไฟล์: $pdfString\n(เตรียมพร้อมเชื่อมต่อลิงก์จริงจาก Firebase)', style: const TextStyle(fontFamily: 'SF-Pro')),
+            content: Text('Opening file: $pdfString\n(Preparing to connect to the real link from Firebase)', style: const TextStyle(fontFamily: 'SF-Pro')),
             backgroundColor: const Color(0xFF4FA0FF),
             duration: const Duration(seconds: 2),
           ),
@@ -124,7 +121,18 @@ class EbookDetailPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 itemCount: pdfFiles.length,
                 itemBuilder: (context, index) {
-                  // 🔴 เปลี่ยนมาใช้ InkWell ครอบ เพื่อให้กดได้และมีเอฟเฟกต์
+                  // 1. ดึง URL เต็มๆ มาก่อน
+                  String fullUrl = pdfFiles[index];
+                  
+                  // 2. สับเอาเฉพาะคำที่อยู่หลัง / ตัวสุดท้าย (นั่นคือชื่อไฟล์)
+                  // และใช้ replaceAll แปลง %20 ให้กลับเป็นช่องว่าง
+                  String fileName = fullUrl.split('/').last.replaceAll('%20', ' ');
+
+                  // ถ้าชื่อไฟล์ดึงไม่ได้หรือไม่มีนามสกุล .pdf ให้ใช้คำว่า Document แทน
+                  if (!fileName.toLowerCase().contains('.pdf')) {
+                    fileName = 'Document ${index + 1}';
+                  }
+
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
@@ -134,20 +142,21 @@ class EbookDetailPage extends StatelessWidget {
                         BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))
                       ]
                     ),
-                    clipBehavior: Clip.antiAlias, // ตัดขอบ InkWell ไม่ให้ล้น
+                    clipBehavior: Clip.antiAlias, 
                     child: InkWell(
-                      onTap: () => _openPdf(context, pdfFiles[index]), // 🔴 เรียกใช้ฟังก์ชันเปิด PDF
+                      // 🔴 3. ตอนกดเปิด ให้ส่ง URL เต็มๆ ไปให้ระบบหลังบ้านเปิดทำงาน
+                      onTap: () => _openPdf(context, fullUrl), 
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // 🔴 เพิ่มไอคอน PDF ให้ดูสวยงามขึ้น
                             const Icon(Icons.picture_as_pdf, color: Colors.redAccent, size: 24),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                pdfFiles[index],
+                                // 🔴 4. โชว์แค่ชื่อไฟล์สวยๆ สั้นๆ บนหน้าจอ
+                                fileName,
                                 style: const TextStyle(
                                   color: Color(0xFF4FA0FF), 
                                   fontSize: 16,
@@ -158,7 +167,7 @@ class EbookDetailPage extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const Icon(Icons.download_rounded, color: Colors.black54), // เปลี่ยนไอคอนเป็นรูปดาวน์โหลด
+                            const Icon(Icons.download_rounded, color: Colors.black54),
                           ],
                         ),
                       ),
